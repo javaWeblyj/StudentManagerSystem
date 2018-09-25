@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.student.mapper.SysManagerMapper">
+  <resultMap id="BaseResultMap" type="com.student.pojo.SysManager">
+    <id column="man_id" jdbcType="VARCHAR" property="man_id" />
+    <result column="man_psd" jdbcType="VARCHAR" property="man_psd" />
+    <result column="man_name" jdbcType="VARCHAR" property="man_name" />
+    <result column="man_login" jdbcType="TIMESTAMP" property="man_nogin" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  
+  <sql id="Base_Column_List">
+    man_id, man_psd, man_name, man_login
+  </sql>
+  
+<!--   插入数据 -->
+  <insert id="add" parameterType="com.student.pojo.SysManager">
+    insert into sys_manager (man_id, man_psd, man_name, man_login
+      )
+    values (#{man_id,jdbcType=VARCHAR}, #{man_psd,jdbcType=VARCHAR}, #{man_name,jdbcType=VARCHAR}, #{man_login,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  
+<!-- 统计记录个数 -->
+        <select id="list" resultType="com.student.pojo.SysManager">
+            select * from   sys_manager    
+<!--        <if test="start!=null and count!=null">
+            	limit #{start},#{count}
+            </if>  -->
+        </select>  
+  
+<!-- 用户登录 -->
+   <select id="login" parameterType="java.util.Map" 
+  	 resultType="com.student.pojo.SysManager">
+	  	select * from sys_manager
+	  	WHERE
+	  	man_id=#{manId,jdbcType=VARCHAR}
+	  	AND
+	  	man_psd=#{manPsd,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectByExample" parameterType="com.student.pojo.SysManagerExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from sys_manager
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  
+<!--   这里有一个坑一定要记住，现在mybatis已经不用返回值 resultMap了，
+  	然而mybatis逆向工程很可能在生成方法时会用到resultMap。这调用到方法时肯定会报错 -->
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultType="com.student.pojo.SysManager">
+    select 
+    <include refid="Base_Column_List" />
+    from sys_manager
+    where man_id = #{manId,jdbcType=VARCHAR}
+  </select>
+  
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from sys_manager
+    where man_id = #{manId,jdbcType=VARCHAR}
+  </delete>
+  
+  
+  
+  <insert id="insert" keyColumn="man_id" keyProperty="man_id" parameterType="com.student.pojo.SysManager" useGeneratedKeys="true">
+    insert into sys_manager (man_psd, man_name, man_login
+      )
+    values (#{man_psd,jdbcType=VARCHAR}, #{man_name,jdbcType=VARCHAR}, #{man_login,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  
+  <insert id="insertSelective" keyColumn="man_id" keyProperty="manId" parameterType="com.student.pojo.SysManager" useGeneratedKeys="true">
+    insert into sys_manager
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="manPsd != null">
+        man_psd,
+      </if>
+      <if test="manName != null">
+        man_name,
+      </if>
+      <if test="manLogin != null">
+        man_login,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="manPsd != null">
+        #{manPsd,jdbcType=VARCHAR},
+      </if>
+      <if test="manName != null">
+        #{manName,jdbcType=VARCHAR},
+      </if>
+      <if test="manLogin != null">
+        #{manLogin,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.student.pojo.SysManager">
+    update sys_manager
+    <set>
+      <if test="manPsd != null">
+        man_psd = #{manPsd,jdbcType=VARCHAR},
+      </if>
+      <if test="manName != null">
+        man_name = #{manName,jdbcType=VARCHAR},
+      </if>
+      <if test="manLogin != null">
+        man_login = #{manLogin,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where man_id = #{manId,jdbcType=VARCHAR}
+  </update>
+  
+<!--   有用到,更新管理员登陆时间 -->
+  <update id="updateLogin" parameterType="com.student.pojo.SysManager">
+    update sys_manager
+    set man_login = #{man_login,jdbcType=TIMESTAMP}
+    where man_id = #{man_id,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateByPrimaryKey" parameterType="com.student.pojo.SysManager">
+    update sys_manager
+    set man_psd = #{man_psd,jdbcType=VARCHAR},
+      man_name = #{man_name,jdbcType=VARCHAR},
+      man_login = #{man_login,jdbcType=TIMESTAMP}
+    where man_id = #{man_id,jdbcType=VARCHAR}
+  </update>
+</mapper>

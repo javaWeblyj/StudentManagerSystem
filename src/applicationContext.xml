@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="
+     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+     http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+     http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+     
+     
+     
+	<!-- 我们一般在含有Spring的项目中，可能会看到配置项中包含这个配置节 
+   	<context:annotation-config>，这是一条向Spring容器中注册
+		AutowiredAnnotationBeanPostProcessor
+		CommonAnnotationBeanPostProcessor
+		PersistenceAnnotationBeanPostProcessor
+		RequiredAnnotationBeanPostProcessor
+	这4个BeanPostProcessor.注册这4个BeanPostProcessor的作用，
+	就是为了你的系统能够识别相应的注解。那么那些注释依赖这些Bean呢。
+	
+	如果想使用@ Resource 、@ PostConstruct、@ PreDestroy等注解
+		就必须声明CommonAnnotationBeanPostProcessor。 
+	如果想使用@PersistenceContext注解，就必须声明PersistenceAnnotationBeanPostProcessor的Bean。 
+	如果想使用@Autowired注解，那么就必须事先在 Spring 容器中声明 
+		AutowiredAnnotationBeanPostProcessor Bean。 
+	如果想使用 @Required的注解，就必须声明RequiredAnnotationBeanPostProcessor的Bean。 -->
+
+	<context:annotation-config />
+   
+	<!-- 在指定包下开启注解扫描 -->
+    <context:component-scan base-package="com.student.service" />
+ 	
+	<!-- 配置数据库数据源  dataSource-->
+<!--     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> 
+      <property name="driverClassName"> 
+          <value>com.mysql.jdbc.Driver</value> 
+      </property> 
+      <property name="url"> 
+          <value>jdbc:mysql://localhost:3306/db_stuManager?characterEncoding=UTF-8</value> 
+     
+      </property> 
+      <property name="username"> 
+          <value>root</value> 
+      </property> 
+      <property name="password"> 
+          <value>admin</value> 
+      </property>          
+    </bean> -->
+    
+    
+<!--     配置数据库连接池 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+<!--         基本属性 url、user、password -->
+        <property name="url" value="jdbc:mysql://localhost:3306/db_stuManager?characterEncoding=UTF-8" />
+        <property name="username" value="root" />
+        <property name="password" value="admin" />
+<!--         可以不配，会根据 url DBType 自动识别 -->
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+ 
+<!--         配置初始化建立物理连接的个数、最小连接池量、最大连接数量 -->
+        <property name="initialSize" value="3" />
+        <property name="minIdle" value="3" />
+        <property name="maxActive" value="20" />
+ 
+<!--         配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="60000" />
+ 
+<!--         配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000" />
+ 
+<!--         配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+ 
+        <property name="validationQuery" value="SELECT 1" />
+        <property name="testWhileIdle" value="true" />
+        <property name="testOnBorrow" value="false" />
+        <property name="testOnReturn" value="false" />
+ 
+<!--         打开 PSCache（缓存 preparedStatement），并且指定每个连接上PSCache的大小 -->
+        <property name="poolPreparedStatements" value="true" />
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
+    </bean>
+     
+<!--	mapperLocations：它表示我们的 Mapper 文件存放的位置，
+     	当我们的 Mapper 文件跟对应的 Mapper 接口处于同一位置的时候可以不用指定该属性的值。
+     	
+     configLocation：用于指定 Mybatis 的配置文件位置。如果指定了该属性，
+     	那么会以该配置文件的内容作为配置信息构建对应的 SqlSessionFactoryBuilder，
+    	 但是后续属性指定的内容会覆盖该配置文件里面指定的对应内容。
+    	 
+     typeAliasesPackage：它一般对应我们的实体类所在的包，这个时候会自动取对应包中
+     	不包括包名的简单类名作为包括包名的别名。多个package之间可以用逗号或者分号等来
+     	进行分隔。(value的值一定要是包的全名)
+     	
+ 	 typeAliases：数组类型，用来指定别名的。指定了这个属性后，Mybatis会把这个类型
+ 		 的短名称作为这个类型的别名，前提是该类上没有标注 @Alias 注解，否则将使用该注解对应的值
+ 	 	作为此种类型的别名。(value的值一定要是类的完全限定名)
+ 	 	
+ 	 plugins：数组类型，用来指定 Mybatis 的  Interceptor。拦截器
+ 	 
+ 	 typeHandlersPackage：用来指定 TypeHandler 所在的包，
+ 	 	 如果指定了该属性，SqlSessionFactoryBean 会自动把该包下面的类注册为
+ 	 	 对应的 TypeHandler。多个 package 之间可以用逗号或者分号等来进行分隔。
+ 	 	 
+ 	 typeHandlers：数组类型，表示TypeHandler。 -->
+<!-- 配置SqlSessionFactory对象 -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 扫描model包 使用别名 -->
+        <property name="typeAliasesPackage" value="com.student.pojo" />
+        <!-- 注入数据库连接池 -->
+        <property name="dataSource" ref="dataSource"/>
+        
+        <!-- 扫描sql配置文件:mapper需要的xml文件 -->
+        <property name="mapperLocations" value="classpath:com/student/mapper/*.xml"/>
+        
+		<!-- 这个拦截器是分页插件PageHelper -->
+        <property name="plugins">
+            <array>
+              <bean class="com.github.pagehelper.PageInterceptor">
+                <property name="properties">
+                  <!--使用下面的方式配置参数，一行配置一个 -->
+                  <value>
+                  </value>
+                </property>
+              </bean>
+            </array>
+          </property>   
+    </bean>
+ 	
+<!-- 指定 mybatis 扫描的包路径-->
+<!-- 配置扫描Dao接口包，动态实现Dao接口，注入到spring容器中 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.student.mapper"/>
+    </bean>
+    
+<!-- 为数据库开启事务。添加事务管理器和事务注解扫描器 -->
+<!-- 也可以直接在服务层利用注解的方式给方法开启事务 ，在方法前加上下面这句话
+		@Transactional(propagation=Propagation.REQUIRED,rollbackForClassName="Exception") 
+    <tx:annotation-driven transaction-manager="transactionManager"/> ：这是开启事务注解扫描器的语句
+		-->
+		
+<!-- 下面为为数据库开启事务的语句 ，配置事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- 注入数据库连接池 -->
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    
+<!-- 下面语句是以 xml 配置形式给指定方法开启事务 -->
+    <tx:advice id="txadvice" transaction-manager="transactionManager"> 
+        <tx:attributes> 
+            <tx:method name="add*" propagation="REQUIRED" rollback-for="Exception" /> 
+            <tx:method name="del*" propagation="REQUIRED" rollback-for="Exception"/>
+            <tx:method name="edit*" propagation="REQUIRED" rollback-for="Exception" />
+            <tx:method name="update*" propagation="REQUIRED" rollback-for="Exception"/> 
+            <tx:method name="list*" propagation="REQUIRED" rollback-for="Exception"/> 
+            <tx:method name="select*" propagation="REQUIRED" rollback-for="Exception"/> 
+            <tx:method name="insert*" propagation="REQUIRED" rollback-for="Exception"/> 
+        </tx:attributes> 
+    </tx:advice>
+    
+<!-- 使支持 aop -->
+    <aop:config> 
+        <aop:pointcut id="serviceMethod" expression="execution(* com.student.service.*.*(..))"/> 
+        <aop:advisor pointcut-ref="serviceMethod" advice-ref="txadvice"/> 
+    </aop:config>
+    
+</beans>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:web="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+     
+  <display-name>StuManagermentSystem</display-name>
+  <welcome-file-list>
+    <welcome-file>login.jsp</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+  </welcome-file-list>
+     
+<!-- SpringMVC会自动检测类发生的变化，但是web.xml做的改动还是必须重启tomcat才可以看到效果 
+			-->
+     
+    <!-- spring的配置文件-->
+    <!--上下文  -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml</param-value>
+    </context-param>
+    
+   <!--  ContextLoaderListener的作用就是启动Web容器时，自动装配
+   		 ApplicationContext.xml的配置信息。因为它实现了
+    	 ServletContextListener这个接口，在web.xml配置这个监听器，
+                           启动容器时，就会默认执行它实现的方法。 -->   
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    
+<!--    在web.xml文件中，我们经常可以看到配置的统一编码过滤器，
+    	他继承了OncePerRequestFilter，而OncePerRequestFilter
+    	继承自GenericFilterBean，GenericFilterBean实现了filter,
+    	因此可见CharacterEncodingFilter具有filter的所有特性；即实现拦
+    	截请求的功能，在HttpServletRequest到达 Servlet 之前，拦截客户的HttpServletRequest 。
+    	根据需要检查HttpServletRequest，也可以修改HttpServletRequest 头和
+    	数据。在HttpServletResponse到达客户端之前，拦截HttpServletResponse 。
+    	根据需要检查HttpServletResponse，也可以修改HttpServletResponse头和数据。
+    	在一个web应用中，可以开发编写多个Filter，这些Filter组合起来称之为一个Filter链。
+    	web服务器根据Filter在web.xml文件中的注册顺序，决定先调用哪个Filter，
+    	当第一个Filter的doFilter方法被调用时，web服务器会创建一个代表Filter链的FilterChain对象传递给该方法。 -->
+    
+<!--     统一编码过滤器 -->
+    <filter>  
+        <filter-name>CharacterEncodingFilter</filter-name>  
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>  
+        
+<!--    其中encoding用来设置编码格式，forceEncoding用来设置是否理会
+        request.getCharacterEncoding()方法，设置为true则强制覆盖之前的编码格式 -->        
+        <init-param>  
+            <param-name>encoding</param-name>  
+            <param-value>utf-8</param-value>  
+        </init-param>  
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>  
+<!--    url-pattern配置为/*表示拦截客户端浏览器所有的请求；
+    	其中在web容器启动的时候会调用CharacterEncodingFilter来实现将init-param中配置的参数记载进来 -->
+    <filter-mapping>  
+        <filter-name>CharacterEncodingFilter</filter-name>  
+        <url-pattern>/*</url-pattern>  
+    </filter-mapping> 
+     
+    <!-- spring mvc核心：分发servlet -->
+    
+	<!-- DispatcherServlet主要用作职责调度工作，本身主要用于控制流程，主要职责如下：
+	1、文件上传解析，如果请求类型是multipart将通过MultipartResolver进行文件上传解析；
+	2、通过HandlerMapping，将请求映射到处理器（返回一个HandlerExecutionChain，
+		它包括一个处理器、多个HandlerInterceptor拦截器）；
+	3、通过HandlerAdapter支持多种类型的处理器(HandlerExecutionChain中的处理器)；
+	4、通过ViewResolver解析逻辑视图名到具体视图实现；
+	5、本地化解析；
+	6、渲染具体的视图等；
+	7、如果执行过程中遇到异常将交给HandlerExceptionResolver来解析。 -->
+    <servlet>
+        <servlet-name>mvc-dispatcher</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!-- spring mvc的配置文件 -->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:springMVC.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup> 
+		<!--// 1:容器开始执行时就加载这个Servlet 0：在第一次请求这个Servlet时才加载 -->
+    </servlet>
+    
+	<!-- 拦截路径， / 的意思是拦截项目下所有文件 -->
+    <servlet-mapping>
+        <servlet-name>mvc-dispatcher</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    
+     
+</web-app>
